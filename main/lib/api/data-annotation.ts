@@ -20,7 +20,7 @@ export const dataAnnotationApi = {
     }
 
     try {
-      const response = await fetch('https://dim-sum-prod.deno.dev/dev/editable_items', {
+      const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/dev/editable_items', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

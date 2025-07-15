@@ -35,7 +35,7 @@ export const editApi = {
     // });
 
     try {
-      const response = await fetch('https://dim-sum-prod.deno.dev/dev/insert_corpus_item', {
+      const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/dev/insert_corpus_item', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
