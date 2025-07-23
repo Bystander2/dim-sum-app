@@ -1,6 +1,6 @@
 # AI Dimsum API Documentation
 
-Base URL: `https://dim-sum-prod.deno.dev`
+Base URL: `https://backend.aidimsum.com`
 
 ## Table of Contents
 - [Public APIs](#public-apis)
@@ -27,7 +27,7 @@ Returns a simple health check message.
 
 **Curl Example:**
 ```bash
-curl -X GET "https://dim-sum-prod.deno.dev/"
+curl -X GET "https://backend.aidimsum.com/"
 ```
 
 ---
@@ -50,7 +50,7 @@ Retrieves all available corpus applications.
 
 **Curl Example:**
 ```bash
-curl -X GET "https://dim-sum-prod.deno.dev/corpus_apps"
+curl -X GET "https://backend.aidimsum.com/corpus_apps"
 ```
 
 ---
@@ -73,7 +73,7 @@ Retrieves all available corpus categories.
 
 **Curl Example:**
 ```bash
-curl -X GET "https://dim-sum-prod.deno.dev/corpus_categories"
+curl -X GET "https://backend.aidimsum.com/corpus_categories"
 ```
 
 ---
@@ -99,7 +99,7 @@ Retrieves a specific corpus category by name.
 
 **Curl Example:**
 ```bash
-curl -X GET "https://dim-sum-prod.deno.dev/corpus_category?name=zyzd"
+curl -X GET "https://backend.aidimsum.com/corpus_category?name=zyzd"
 ```
 
 ---
@@ -133,7 +133,7 @@ Performs text search with support for both traditional and simplified Chinese ch
 
 **Curl Example:**
 ```bash
-curl -X GET "https://dim-sum-prod.deno.dev/text_search_v2?keyword=為&table_name=cantonese_corpus_all&limit=10"
+curl -X GET "https://backend.aidimsum.com/text_search_v2?keyword=為&table_name=cantonese_corpus_all&limit=10"
 ```
 
 ---
@@ -168,10 +168,10 @@ Retrieves a specific corpus item by unique_id or data.
 **Curl Examples:**
 ```bash
 # Search by unique_id
-curl -X GET "https://dim-sum-prod.deno.dev/corpus_item?unique_id=your-uuid-here"
+curl -X GET "https://backend.aidimsum.com/corpus_item?unique_id=your-uuid-here"
 
 # Search by data
-curl -X GET "https://dim-sum-prod.deno.dev/corpus_item?data=為"
+curl -X GET "https://backend.aidimsum.com/corpus_item?data=為"
 ```
 
 ---
@@ -228,7 +228,7 @@ Submits an update request for a corpus item. Requires an approved API key.
 
 **Curl Example:**
 ```bash
-curl -X POST "https://dim-sum-prod.deno.dev/dev/insert_corpus_item" \
+curl -X POST "https://backend.aidimsum.com/dev/insert_corpus_item" \
   -H "Content-Type: application/json" \
   -d '{
     "uuid": "your-corpus-item-uuid",
@@ -285,7 +285,7 @@ Directly inserts a new corpus item. Requires admin password.
 
 **Curl Example:**
 ```bash
-curl -X POST "https://dim-sum-prod.deno.dev/admin/insert_corpus_item" \
+curl -X POST "https://backend.aidimsum.com/admin/insert_corpus_item" \
   -H "Content-Type: application/json" \
   -d '{
     "data": "新",
