@@ -47,6 +47,7 @@ router
 .get("/", async (context) => {
   context.response.body = { result: "Hello, Devs for AI Dimsum!" };
 })
+// exp: https://backend.aidimsum.com/random_item?corpus_name=zyzdv2
 .get("/random_item", async (context) => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
@@ -200,14 +201,15 @@ router
   const queryParams = context.request.url.searchParams;
   const key = queryParams.get("keyword");
   // Convert the key to both traditional and simplified Chinese
-  const traditionalKey = tify(key);
-  const simplifiedKey = sify(key);
+  const traditionalKey = tify(key ?? "");
+  const simplifiedKey = sify(key ?? "");
   console.log("traditionalKey", traditionalKey);
   console.log("simplifiedKey", simplifiedKey);
-  const tableName = queryParams.get("table_name");
+  const tableName = queryParams.get("table_name") ?? "";
   // const column = queryParams.get("column");
-  const limit = parseInt(queryParams.get("limit"), 10); // Get limit from query and convert to integer
-  const supabase_url = queryParams.get("supabase_url") || Deno.env.get("SUPABASE_URL");
+  const limitStr = queryParams.get("limit");
+  const limit = limitStr ? parseInt(limitStr, 10) : undefined;
+  const supabase_url = queryParams.get("supabase_url") || Deno.env.get("SUPABASE_URL") || "";
   // TODO: make SUPABASE_SERVICE_ROLE_KEY for a spec table as a param.
   const supabase = createClient(
     supabase_url,
@@ -219,7 +221,7 @@ router
     const searchableTables = ["cantonese_corpus_all"];
 
     // Check if the table is allowed to be searched
-    if (!searchableTables.includes(tableName)) {
+    if (!tableName || !searchableTables.includes(tableName)) {
       context.response.status = 403; // Forbidden status code
       context.response.body = {
         error: "The specified table is not searchable.",
@@ -241,7 +243,7 @@ router
     mergedData = Array.from(new Map(mergedData.map(item => [item.unique_id, item])).values());
 
     // Apply limit after merging if specified
-    if (!isNaN(limit) && limit > 0) {
+    if (limit !== undefined && limit > 0) {
       mergedData = mergedData.slice(0, limit);
     }
 
@@ -417,70 +419,56 @@ router
   /*
     read zyzd corpus from ../corpus/zyzd.json
   */
+  interface ZyzdReading {
+    粵拼讀音: string;
+    讀音標記: string | null;
+    變調: string | null;
+  }
+
+  interface ZyzdEntry {
+    釋義: string;
+    讀音: ZyzdReading[];
+  }
+
+  interface ZyzdItem {
+    編號: string;
+    頁: number;
+    字頭: string[];
+    義項: ZyzdEntry[];
+    _校訂補充: {
+      異體: string[];
+      校訂註: string | null;
+    };
+  }
+
+  interface ProcessingResult {
+    success: boolean;
+    character: string;
+    error?: string;
+  }
+
   const zyzdCorpus = await Deno.readTextFile("../corpus/zyzd.json");
-  const zyzdCorpusArray = JSON.parse(zyzdCorpus);
-  const results = [];
+  const zyzdCorpusArray = JSON.parse(zyzdCorpus) as ZyzdItem[];
+  const results: ProcessingResult[] = [];
 
   for (const item of zyzdCorpusArray) {
     console.log("Processing item:", item.編號);
     console.log("item", item);
-    /*
-    HINT: DO NOT DELETE THE EXAMPLE BELOW.
-    here is the item example: 
-    - if 字頭 has multiple items, make multiple corpus items, 字頭 = data
-    - note = {"meaning": ["釋義 1", "釋義 2"...], "pinyin": ["粵拼讀音_1", "粵拼讀音_2"...], contributor: "0x04"}
-    - category = "zyzd"
-    - tags = ["word"]
-    {
-        "編號": "0005",
-        "頁": 1,
-        "字頭": [
-            "為",
-            "爲"
-        ],
-        "義項": [
-            {
-                "釋義": "㈠①作～．事在人～。②能者～師．一分～二",
-                "讀音": [
-                    {
-                        "粵拼讀音": "wai4",
-                        "讀音標記": null,
-                        "變調": null
-                    }
-                ]
-            },
-            {
-                "釋義": "㈡①～社會服務。②表目的。③幫助。④對、向",
-                "讀音": [
-                    {
-                        "粵拼讀音": "wai6",
-                        "讀音標記": null,
-                        "變調": null
-                    }
-                ]
-            }
-        ],
-        "_校訂補充": {
-            "異體": [],
-            "校訂註": null
-        }
-    },
-    */
+
     // For each character in 字頭, create a separate entry
     for (const char of item.字頭) {
       // Format the note object
       const note = {
         "context": {
-        meaning: item.義項.map(entry => entry.釋義),
-        pinyin: item.義項.flatMap(entry => 
-          entry.讀音.map(sound => sound.粵拼讀音)
-        ),
-        page: item.頁,
-        number: item.編號,
-        others: item._校訂補充
-      },
+          meaning: item.義項.map((entry: ZyzdEntry) => entry.釋義),
+          pinyin: item.義項.flatMap((entry: ZyzdEntry) => 
+            entry.讀音.map((sound: ZyzdReading) => sound.粵拼讀音)
+          ),
+          page: item.頁,
+          number: item.編號,
+          others: item._校訂補充
+        },
         contributor: "0x05",
-
       };
       console.log("note", note);
 
@@ -493,8 +481,10 @@ router
           ["word"]  // tags
         );
         console.log("result", result);
+        results.push({ success: true, character: char });
       } catch (error) {
         console.error(`Error inserting character ${char}:`, error);
+        results.push({ success: false, character: char, error: error instanceof Error ? error.message : String(error) });
       }
     }
   }
