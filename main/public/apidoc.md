@@ -174,11 +174,36 @@ curl -X GET "https://backend.aidimsum.com/corpus_item?unique_id=your-uuid-here"
 curl -X GET "https://backend.aidimsum.com/corpus_item?data=為"
 ```
 
----
+### 7. Get Random Corpus Item
+**GET** `/random_item`
+
+Retrieves a random corpus item from a specified corpus.
+
+**Parameters:**
+- `corpus_name` (required): The name of the corpus to get a random item from (e.g., "zyzdv2")
+
+**Response:**
+```json
+{
+  "unique_id": "uuid",
+  "data": "character",
+  "note": {
+    "meaning": ["definition1", "definition2"],
+    "pinyin": ["pronunciation1", "pronunciation2"]
+  },
+  "category": "zyzd",
+  "tags": ["word"]
+}
+```
+
+**Curl Example:**
+```bash
+curl -X GET "https://backend.aidimsum.com/random_item?corpus_name=zyzdv2"
+```
 
 ## Developer APIs (API Key Required)
 
-### 7. Submit Corpus Item Update
+### 8. Submit Corpus Item Update
 **POST** `/dev/insert_corpus_item`
 
 Submits an update request for a corpus item. Requires an approved API key.
@@ -245,7 +270,7 @@ curl -X POST "https://backend.aidimsum.com/dev/insert_corpus_item" \
 
 ## Admin APIs (Password Required)
 
-### 8. Insert Corpus Item (Admin)
+### 9. Insert Corpus Item (Admin)
 **POST** `/admin/insert_corpus_item`
 
 Directly inserts a new corpus item. Requires admin password.
